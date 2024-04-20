@@ -1,44 +1,73 @@
-var builder = WebApplication.CreateBuilder(args);
+using Cards.Persistense.Data;
+using Microsoft.EntityFrameworkCore;
+using TodoApp.Extensions.Middlewares;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration.AddJsonFile("appsettings.json").AddEnvironmentVariables();
 
-app.UseHttpsRedirection();
+        builder.Services.AddApplicationLayer();
+        builder.Services.AddPersistenseLayer(builder.Configuration);
+        builder
+            .Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    Dictionary<string, string[]> errorsDict = new Dictionary<string, string[]>();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+                    var errorsTypes = context.ModelState.Keys.ToArray();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+                    for (int i = 0; i < errorsTypes.Length; i++)
+                    {
+                        List<string> errors = new List<string>();
 
-app.Run();
+                        foreach (var error in context.ModelState[errorsTypes[i]]!.Errors)
+                            errors.Add(error.ErrorMessage);
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+                        if (errorsTypes[i] == "")
+                            errorsDict.Add("General", errors.ToArray());
+                        else
+                            errorsDict.Add(errorsTypes[i], errors.ToArray());
+                    }
+
+                    throw new TodoApp.Exceptions.HttpClientExceptions.InvalidDataException(
+                        errorsDict
+                    );
+                };
+            });
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwagger("Cards");
+        builder.Services.AddJwtAuth(builder.Configuration);
+
+        var app = builder.Build();
+
+        app.UseSwagger();
+        app.UseSwaggerUI(o =>
+        {
+            o.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        });
+        
+        using (var scope = app.Services.CreateScope())
+        {
+            try
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                context.Database.Migrate();
+            }
+            catch { }
+            finally { }
+        }
+
+        app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseHttpsRedirection();
+
+        app.MapControllers();
+
+        app.Run();
+    }
 }
