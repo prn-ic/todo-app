@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
 		<AssemblyName>Cards.WebApi</AssemblyName>
 		<RootNamespace>Cards.WebApi</RootNamespace>
@@ -16,13 +18,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Cards.Domain\Cards.Domain.csproj" />
     <ProjectReference Include="..\Cards.Persistense\Cards.Persistense.csproj" />
     <ProjectReference Include="..\Cards.Application\Cards.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\libs\TodoApp.Extensions\TodoApp.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

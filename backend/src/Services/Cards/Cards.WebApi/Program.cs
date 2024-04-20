@@ -1,7 +1,6 @@
-using System.Reflection;
 using Cards.Persistense.Data;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TodoApp.Extensions.Middlewares;
 
 public class Program
 {
@@ -12,20 +11,46 @@ public class Program
 
         builder.Services.AddApplicationLayer();
         builder.Services.AddPersistenseLayer(builder.Configuration);
+        builder
+            .Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    Dictionary<string, string[]> errorsDict = new Dictionary<string, string[]>();
 
-        builder.Services.AddControllers();
+                    var errorsTypes = context.ModelState.Keys.ToArray();
+
+                    for (int i = 0; i < errorsTypes.Length; i++)
+                    {
+                        List<string> errors = new List<string>();
+
+                        foreach (var error in context.ModelState[errorsTypes[i]]!.Errors)
+                            errors.Add(error.ErrorMessage);
+
+                        if (errorsTypes[i] == "")
+                            errorsDict.Add("General", errors.ToArray());
+                        else
+                            errorsDict.Add(errorsTypes[i], errors.ToArray());
+                    }
+
+                    throw new TodoApp.Exceptions.HttpClientExceptions.InvalidDataException(
+                        errorsDict
+                    );
+                };
+            });
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwagger("Cards");
+        builder.Services.AddJwtAuth(builder.Configuration);
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        app.UseSwagger();
+        app.UseSwaggerUI(o =>
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
+            o.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        });
+        
         using (var scope = app.Services.CreateScope())
         {
             try
@@ -36,6 +61,8 @@ public class Program
             catch { }
             finally { }
         }
+
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseHttpsRedirection();
 
