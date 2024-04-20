@@ -1,0 +1,13 @@
+<div class="task-cards-wrapper">
+  <h1>My tasks</h1>
+  <div *ngFor="let item of cardItems">
+    <div class="task-cards">
+      <div class="task-card">
+        <p class="task-card-name">{{ item.Name }}</p>
+        <p class="task-card-date">{{ item.CreatedAt | date : "MM/dd/yyyy" }}</p>
+        <p class="task-card-description">{{ item.Description }}</p>
+        <p [ngClass]="item.Status.toString()" class="task-card-status">{{item.Status}}</p>
+      </div>
+    </div>
+  </div>
+</div>

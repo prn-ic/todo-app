@@ -3,10 +3,12 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { CommonHeader } from './shared/components/headers/common-header/common-header';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    CommonHeader
   ],
   imports: [
     BrowserModule,

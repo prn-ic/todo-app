@@ -1,0 +1,54 @@
+.common-header {
+  height: 100px;
+  border-bottom: 2px solid #bebebe;
+  padding: 0 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-name-colored {
+  color: rgb(141, 0, 0);
+}
+
+.register-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-login {
+  border: 0.5px solid #bebebe;
+  border: none;
+  padding: 1em 2em;
+  font-family: "Montserrat";
+  border-radius: 15px;
+  font-size: 16px;
+  color: #ffffff;
+  background: rgb(141, 0, 0);
+  margin: 5px;
+  transition: 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-login:hover {
+  color: rgb(141, 0, 0);
+  background: #ffffff;
+}
+
+.btn-register {
+  border: 0.5px solid #bebebe;
+  padding: 1em 2em;
+  font-family: "Montserrat";
+  border-radius: 15px;
+  font-size: 16px;
+  color: rgb(141, 0, 0);
+  background: rgb(255, 255, 255);
+  margin: 5px;
+  transition: 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-register:hover {
+  color: rgb(255, 255, 255);
+  background: rgb(141, 0, 0);
+}
